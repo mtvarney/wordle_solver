@@ -66,6 +66,8 @@ WORDLE_URL = "https://www.nytimes.com/games/wordle/index.html"
 with open("wordle-answers-alphabetical.txt") as word_list:
     full_word_list = word_list.read().split("\n")
 
+first_pass_word_list = [word for word in full_word_list if len(set(word)) == len(word)]
+
 driver = webdriver.Chrome(ChromeDriverManager().install())
 
 driver.get(WORDLE_URL)
@@ -77,7 +79,7 @@ close.click()
 time.sleep(1)
 
 first_tile = driver.find_element(By.TAG_NAME, "body")
-first_guess = random.choice(full_word_list)
+first_guess = random.choice(first_pass_word_list)
 first_tile.send_keys(first_guess)
 first_tile.send_keys(Keys.ENTER)
 
