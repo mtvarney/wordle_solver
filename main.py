@@ -10,6 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
+#Grabs absent, present, and correct letters to narrow down word list to only words that match that criteria
 
 def update_trimmed_list(list_trimmed):
     soup = BeautifulSoup(driver.find_element(By.XPATH, "//body").get_attribute('outerHTML'), "html.parser")
@@ -53,6 +54,7 @@ def update_trimmed_list(list_trimmed):
 
     return trimmed_list
 
+#Generates new random guess from trimmed down word list and sends the guess to wordle
 
 def new_guess(list_trimmed):
     new_guess = random.choice(list_trimmed)
@@ -66,7 +68,11 @@ WORDLE_URL = "https://www.nytimes.com/games/wordle/index.html"
 with open("wordle-answers-alphabetical.txt") as word_list:
     full_word_list = word_list.read().split("\n")
 
+#Limit first guess to only words without repeated letters to get maximum information out of first guess
+
 first_pass_word_list = [word for word in full_word_list if len(set(word)) == len(word)]
+
+#Initialize webdriver and go to wordle website. Wait until initial popup comes up and close.
 
 driver = webdriver.Chrome(ChromeDriverManager().install())
 
@@ -78,6 +84,8 @@ close.click()
 
 time.sleep(1)
 
+#Send first guess to wordle
+
 first_tile = driver.find_element(By.TAG_NAME, "body")
 first_guess = random.choice(first_pass_word_list)
 first_tile.send_keys(first_guess)
@@ -85,11 +93,10 @@ first_tile.send_keys(Keys.ENTER)
 
 time.sleep(2)
 
-soup = BeautifulSoup(driver.find_element(By.XPATH, "//body").get_attribute('outerHTML'), "html.parser")
-
 trimmed_list = full_word_list
 trimmed_list = update_trimmed_list(trimmed_list)
 
+#While loop to keep guessing until it sees the game completed popup
 
 flag = True
 while flag:
