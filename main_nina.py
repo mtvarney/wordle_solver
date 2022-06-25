@@ -11,7 +11,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
 #Grabs absent, present, and correct letters to narrow down word list to only words that match that criteria
-num_letters = 5
 
 
 def update_trimmed_list(list_trimmed):
@@ -33,7 +32,7 @@ def update_trimmed_list(list_trimmed):
         #get the number, will be whatever is after the space
         letter_idx = parent["style"].find(' ') + 1
 
-        #Access the string at thst location and turn it into a loop
+        #Access the string at that location and turn it into a int
         location = int(parent["style"][letter_idx])
 
         #Update entry
@@ -45,6 +44,7 @@ def update_trimmed_list(list_trimmed):
     #Single line loops, fancy!
     trimmed_list = [word for word in list_trimmed if not any(ignore in word for ignore in absent_letters)]
     trimmed_list = [word for word in trimmed_list if all(present in word for present in present_letters)]
+    
 
     #iterate through the items in the dictionary instead of through the list and accessing each dictionary item
     for key, value in correct_letters.items():
