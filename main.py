@@ -20,12 +20,35 @@ def update_trimmed_list(list_trimmed):
         absent_letters.append(data.get_text())
     for data in soup.find_all(attrs={'data-state': 'present', 'class': 'Key-module_key__Rv-Vp Key-module_fade__37Hk8'}):
         present_letters.append(data.get_text())
-    for data in soup.find_all(attrs={'data-state': 'correct', 'class': 'Key-module_key__Rv-Vp Key-module_fade__37Hk8'}):
-        correct_letters.append(data.get_text())
+    for data in soup.find_all(attrs={'data-state': 'correct', 'class': 'Tile-module_tile__3ayIZ'}):
+        parent = data.find_parent()
+        if parent["style"] == "animation-delay: 0ms;":
+            entry = {0: data.get_text()}
+            if entry not in correct_letters:
+                correct_letters.append(entry)
+        elif parent["style"] == "animation-delay: 100ms;":
+            entry = {1: data.get_text()}
+            if entry not in correct_letters:
+                correct_letters.append(entry)
+        elif parent["style"] == "animation-delay: 200ms;":
+            entry = {2: data.get_text()}
+            if entry not in correct_letters:
+                correct_letters.append(entry)
+        elif parent["style"] == "animation-delay: 300ms;":
+            entry = {3: data.get_text()}
+            if entry not in correct_letters:
+                correct_letters.append(entry)
+        elif parent["style"] == "animation-delay: 400ms;":
+            entry = {4: data.get_text()}
+            if entry not in correct_letters:
+                correct_letters.append(entry)
+    print(correct_letters)
 
     trimmed_list = [word for word in list_trimmed if not any(ignore in word for ignore in absent_letters)]
     trimmed_list = [word for word in trimmed_list if all(present in word for present in present_letters)]
-    trimmed_list = [word for word in trimmed_list if all(correct in word for correct in correct_letters)]
+    for dic in correct_letters:
+        for key in dic:
+            trimmed_list = [word for word in trimmed_list if word[key] == dic[key]]
     print(trimmed_list)
 
     return trimmed_list
@@ -68,7 +91,7 @@ trimmed_list = update_trimmed_list(trimmed_list)
 
 flag = True
 while flag:
-    time.sleep(2)
+    time.sleep(1)
     try:
         driver.find_element(By.CLASS_NAME, "Stats-module_gameStats__ZP1aW")
         flag = False
