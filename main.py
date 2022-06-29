@@ -15,9 +15,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 def update_trimmed_list(list_trimmed):
     soup = BeautifulSoup(driver.find_element(By.XPATH, "//body").get_attribute('outerHTML'), "html.parser")
-    absent_letters = []
-    present_letters = []
-    correct_letters = {}
     for data in soup.find_all(attrs={'data-state': 'correct', 'class': 'Tile-module_tile__3ayIZ'}):
         parent = data.find_parent()
         letter_idx = parent["style"].find(' ') + 1
@@ -30,18 +27,24 @@ def update_trimmed_list(list_trimmed):
     for data in soup.find_all(attrs={'data-state': 'present', 'class': 'Key-module_key__Rv-Vp Key-module_fade__37Hk8'}):
         present_letters.append(data.get_text())
 
+    #Eliminate words that contain absent letters or do not contain present letters/correct letters + postiion. Also
+    #removes any previously guessed words
     trimmed_list = [word for word in list_trimmed if not any(ignore in word for ignore in absent_letters)]
     trimmed_list = [word for word in trimmed_list if all(present in word for present in present_letters)]
     for key, value in correct_letters.items():
         trimmed_list = [word for word in trimmed_list if word[key] == value]
     trimmed_list = [word for word in trimmed_list if word not in guesses]
+
+    #Sort list by number of unique characters to eliminate as many letters as possible
+    trimmed_list = sorted(trimmed_list, key=lambda word: len(list(set(word))), reverse=True)
+
     return trimmed_list
 
 
-# Generates new random guess from trimmed down word list and sends the guess to wordle
+# Picks first guess from sorted trimmed down word list and sends the guess to wordle
 
 def new_guess(list_trimmed):
-    new_guess = random.choice(list_trimmed)
+    new_guess = list_trimmed[0]
     guesses.append(new_guess)
     first_tile = driver.find_element(By.TAG_NAME, "body")
     first_tile.send_keys(new_guess)
@@ -81,6 +84,10 @@ first_tile.send_keys(Keys.ENTER)
 
 time.sleep(2)
 
+absent_letters = []
+present_letters = []
+correct_letters = {}
+
 trimmed_list = full_word_list
 trimmed_list = update_trimmed_list(trimmed_list)
 
@@ -88,12 +95,12 @@ trimmed_list = update_trimmed_list(trimmed_list)
 
 flag = True
 while flag:
-    time.sleep(1)
     try:
         driver.find_element(By.CLASS_NAME, "Stats-module_gameStats__ZP1aW")
         flag = False
     except NoSuchElementException:
         trimmed_list = update_trimmed_list(trimmed_list)
         new_guess(trimmed_list)
+        time.sleep(2)
 
 time.sleep(20)
