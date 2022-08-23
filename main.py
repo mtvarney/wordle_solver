@@ -24,13 +24,18 @@ def update_trimmed_list(list_trimmed):
     for data in soup.find_all(attrs={'data-state': 'absent', 'class': 'Key-module_key__Rv-Vp Key-module_fade__37Hk8'}):
         if data.get_text() not in list(correct_letters.values()):
             absent_letters.append(data.get_text())
-    for data in soup.find_all(attrs={'data-state': 'present', 'class': 'Key-module_key__Rv-Vp Key-module_fade__37Hk8'}):
-        present_letters.append(data.get_text())
+    for data in soup.find_all(attrs={'data-state': 'present', 'class': 'Tile-module_tile__3ayIZ'}):
+        parent = data.find_parent()
+        letter_idx = parent["style"].find(' ') + 1
+        location = int(parent["style"][letter_idx])
+        present_letters[location] = data.get_text()
 
     #Eliminate words that contain absent letters or do not contain present letters/correct letters + postiion. Also
     #removes any previously guessed words
     trimmed_list = [word for word in list_trimmed if not any(ignore in word for ignore in absent_letters)]
-    trimmed_list = [word for word in trimmed_list if all(present in word for present in present_letters)]
+    trimmed_list = [word for word in trimmed_list if all(present in word for present in present_letters.values())]
+    for key, value in present_letters.items():
+        trimmed_list = [word for word in trimmed_list if word[key] != value]
     for key, value in correct_letters.items():
         trimmed_list = [word for word in trimmed_list if word[key] == value]
     trimmed_list = [word for word in trimmed_list if word not in guesses]
@@ -85,7 +90,7 @@ first_tile.send_keys(Keys.ENTER)
 time.sleep(2)
 
 absent_letters = []
-present_letters = []
+present_letters = {}
 correct_letters = {}
 
 trimmed_list = full_word_list
